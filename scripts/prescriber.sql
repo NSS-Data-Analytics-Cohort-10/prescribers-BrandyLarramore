@@ -13,7 +13,8 @@ ORDER BY SUM(total_claim_count) DESC;
 --     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
 
 
-SELECT npi, nppes_provider_last_org_name, nppes_provider_first_name, specialty_description, SUM(total_claim_count) AS claim_count_sum, nppes_provider_last_org_name AS last_name 
+
+SELECT npi, nppes_provider_first_name, specialty_description, SUM(total_claim_count) AS claim_count_sum, nppes_provider_last_org_name AS last_name 
 FROM prescriber
 INNER JOIN prescription
 	USING (npi)
@@ -21,19 +22,27 @@ GROUP BY npi, nppes_provider_last_org_name, nppes_provider_first_name, specialty
 ORDER BY claim_count_sum DESC;
 
 
-
-
 -- 2. 
 --     a. Which specialty had the most total number of claims (totaled over all drugs)?
 
-SELECT total_claim_count_ge65, total_claim_count_ge65
-FROM prescription
-LEFT JOIN prescriber
+SELECT specialty_description, SUM(total_claim_count) AS claim_count_sum
+FROM prescriber
+LEFT JOIN prescription
 USING (npi)
 GROUP BY specialty_description
-
+ORDER BY SUM(total_claim_count) DESC;
 
 --     b. Which specialty had the most total number of claims for opioids?
+
+SELECT specialty_description, SUM(total_claim_count) AS sum_of_claim_count
+FROM prescriber AS p1
+LEFT JOIN prescription AS p2
+USING (npi)
+LEFT JOIN drug
+USING (drug_name)
+WHERE opioid_drug_flag='Y'
+GROUP BY specialty_description
+ORDER BY SUM(total_claim_count) DESC;
 
 --     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
 
