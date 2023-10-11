@@ -1,25 +1,36 @@
 -- 1. 
 --     a. Which prescriber had the highest total number of claims (totaled over all drugs)? Report the npi and the total number of claims.
 
-SELECT total_claim_count, nppes_provider_last_org_name AS last_name, npi
-FROM prescription
-LEFT JOIN prescriber USING (npi)
-ORDER BY total_claim_count DESC;
+SELECT npi, SUM(total_claim_count) AS claim_count_sum, nppes_provider_last_org_name AS last_name 
+FROM prescriber
+INNER JOIN prescription
+	USING (npi)
+GROUP BY npi, last_name
+ORDER BY SUM(total_claim_count) DESC;
 
---COFFEY
+--PENDLEY
     
 --     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
 
-SELECT total_claim_count, nppes_provider_first_name AS first_name, nppes_provider_last_org_name AS last_name, specialty_description
-FROM prescription
-LEFT JOIN prescriber USING (npi)
-ORDER BY total_claim_count DESC;
+
+SELECT npi, nppes_provider_last_org_name, nppes_provider_first_name, specialty_description, SUM(total_claim_count) AS claim_count_sum, nppes_provider_last_org_name AS last_name 
+FROM prescriber
+INNER JOIN prescription
+	USING (npi)
+GROUP BY npi, nppes_provider_last_org_name, nppes_provider_first_name, specialty_description
+ORDER BY claim_count_sum DESC;
+
+
+
 
 -- 2. 
 --     a. Which specialty had the most total number of claims (totaled over all drugs)?
 
-
-
+SELECT total_claim_count_ge65, total_claim_count_ge65
+FROM prescription
+LEFT JOIN prescriber
+USING (npi)
+GROUP BY specialty_description
 
 
 --     b. Which specialty had the most total number of claims for opioids?
