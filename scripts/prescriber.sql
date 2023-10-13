@@ -46,17 +46,67 @@ ORDER BY SUM(total_claim_count) DESC;
 
 --     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
 
+
+
 --     d. **Difficult Bonus:** *Do not attempt until you have solved all other problems!* For each specialty, report the percentage of total claims by that specialty which are for opioids. Which specialties have a high percentage of opioids?
+
+
 
 -- 3. 
 --     a. Which drug (generic_name) had the highest total drug cost?
 
+SELECT generic_name, 
+	CAST (total_drug_cost AS money)
+FROM drug
+INNER JOIN prescription
+Using (drug_name)
+ORDER BY total_drug_cost DESC
+
 --     b. Which drug (generic_name) has the hightest total cost per day? **Bonus: Round your cost per day column to 2 decimal places. Google ROUND to see how this works.**
+
+SELECT generic_name
+FROM drug
+INNER JOIN prescription
+
+SELECT total_30_day_fill_count
+FROM prescription
+
+
 
 -- 4. 
 --     a. For each drug in the drug table, return the drug name and then a column named 'drug_type' which says 'opioid' for drugs which have opioid_drug_flag = 'Y', says 'antibiotic' for those drugs which have antibiotic_drug_flag = 'Y', and says 'neither' for all other drugs.
 
+SELECT drug_name, SUM(total_drug_cost) AS total_cost,
+CASE
+    WHEN opioid_drug_flag = 'Y' THEN 'opioid'
+    WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic'
+    ELSE 'neither'
+END AS drug_category
+FROM drug
+LEFT JOIN prescription
+USING (drug_name)
+GROUP BY drug_name, drug_category
+
+
 --     b. Building off of the query you wrote for part a, determine whether more was spent (total_drug_cost) on opioids or on antibiotics. Hint: Format the total costs as MONEY for easier comparision.
+
+
+WITH categorized AS
+(SELECT drug_name, CAST(SUM(total_drug_cost) AS MONEY) AS total_cost,
+CASE
+    WHEN opioid_drug_flag = 'Y' THEN 'opioid'
+    WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic'
+    ELSE 'neither'
+END AS drug_category
+FROM drug
+LEFT JOIN prescription
+USING (drug_name)
+GROUP BY drug_name, drug_category)
+SELECT drug_category, CAST(SUM(total_cost) AS MONEY) AS total_cost
+FROM categorized
+GROUP BY drug_category
+ORDER BY total_cost DESC;
+
 
 -- 5. 
 --     a. How many CBSAs are in Tennessee? **Warning:** The cbsa table contains information for all states, not just Tennessee.
@@ -69,6 +119,7 @@ ORDER BY SUM(total_claim_count) DESC;
 --     a. Find all rows in the prescription table where total_claims is at least 3000. Report the drug_name and the total_claim_count.
 
 --     b. For each instance that you found in part a, add a column that indicates whether the drug is an opioid.
+
 
 --     c. Add another column to you answer from the previous part which gives the prescriber first and last name associated with each row.
 
