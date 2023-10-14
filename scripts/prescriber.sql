@@ -12,15 +12,15 @@ ORDER BY SUM(total_claim_count) DESC;
     
 --     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
 
-
-
-SELECT npi, nppes_provider_first_name, specialty_description, SUM(total_claim_count) AS claim_count_sum, nppes_provider_last_org_name AS last_name 
+SELECT npi, nppes_provider_first_name, nppes_provider_last_org_name AS last_name, specialty_description, SUM(total_claim_count) AS claim_count_sum
 FROM prescriber
 INNER JOIN prescription
 	USING (npi)
 GROUP BY npi, nppes_provider_last_org_name, nppes_provider_first_name, specialty_description
 ORDER BY claim_count_sum DESC;
 
+
+--Bruce Pendly, Family practice, 99707
 
 -- 2. 
 --     a. Which specialty had the most total number of claims (totaled over all drugs)?
@@ -31,6 +31,8 @@ LEFT JOIN prescription
 USING (npi)
 GROUP BY specialty_description
 ORDER BY SUM(total_claim_count) DESC;
+
+-- Family Practice
 
 --     b. Which specialty had the most total number of claims for opioids?
 
@@ -44,6 +46,8 @@ WHERE opioid_drug_flag='Y'
 GROUP BY specialty_description
 ORDER BY SUM(total_claim_count) DESC;
 
+-- Nurse Practitioner
+
 --     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
 
 
@@ -56,11 +60,24 @@ ORDER BY SUM(total_claim_count) DESC;
 --     a. Which drug (generic_name) had the highest total drug cost?
 
 SELECT generic_name, 
-	CAST (total_drug_cost AS money)
+	SUM(CAST(total_drug_cost AS money)
 FROM drug
 INNER JOIN prescription
 Using (drug_name)
+GROUP BY generic_name
 ORDER BY total_drug_cost DESC
+		  
+SELECT generic_name, 
+       SUM(CAST(total_drug_cost AS money)) AS total_cost
+FROM drug
+INNER JOIN prescription
+ON drug.drug_name = prescription.drug_name
+GROUP BY generic_name
+ORDER BY total_cost DESC;
+		
+		
+		
+		  NOT WORKING
 
 --     b. Which drug (generic_name) has the hightest total cost per day? **Bonus: Round your cost per day column to 2 decimal places. Google ROUND to see how this works.**
 
@@ -68,10 +85,10 @@ SELECT generic_name
 FROM drug
 INNER JOIN prescription
 
-SELECT total_30_day_fill_count
+SELECT sum total drug cost divided by total_30_day_fill_count 
 FROM prescription
 
-
+7141?
 
 -- 4. 
 --     a. For each drug in the drug table, return the drug name and then a column named 'drug_type' which says 'opioid' for drugs which have opioid_drug_flag = 'Y', says 'antibiotic' for those drugs which have antibiotic_drug_flag = 'Y', and says 'neither' for all other drugs.
@@ -114,10 +131,25 @@ ORDER BY total_cost DESC;
 SELECT *
 FROM cbsa
 WHERE LOWER(cbsaname) LIKE '%tn%';
+		  
+--58
 
 
 --     b. Which cbsa has the largest combined population? Which has the smallest? Report the CBSA name and total population.
 
+SELECT SUM(CAST(cbsa AS INT)) total_cbsa, cbsaname
+FROM cbsa
+GROUP BY cbsaname
+ORDER BY total_cbsa DESC;
+
+SELECT SUM(CAST(cbsa AS INT)) total_cbsa, cbsaname
+FROM cbsa
+GROUP BY cbsaname
+ORDER BY total_cbsa;
+
+-- largest: San Juan-Carolina_caguas, PR
+-- smallest: Albany, OR
+		  
 
 
 --     c. What is the largest (in terms of population) county which is not included in a CBSA? Report the county name and population.
@@ -163,6 +195,22 @@ WHERE p.total_claim_count > 3000
 
 --     a. First, create a list of all npi/drug_name combinations for pain management specialists (specialty_description = 'Pain Management) in the city of Nashville (nppes_provider_city = 'NASHVILLE'), where the drug is an opioid (opiod_drug_flag = 'Y'). **Warning:** Double-check your query before running it. You will only need to use the prescriber and drug tables since you don't need the claims numbers yet.
 
+SELECT rx.npi, drug_name
+FROM prescriber as dr
+INNER JOIN prescription AS rx
+USING (npi)
+WHERE specialty_description = 'Pain Management';
+
+
 --     b. Next, report the number of claims per drug per prescriber. Be sure to include all combinations, whether or not the prescriber had any claims. You should report the npi, the drug name, and the number of claims (total_claim_count).
 
+SELECT rx.npi, drug_name, total_claim_count, nppes_provider_last_org_name AS last_name
+FROM prescriber as dr
+INNER JOIN prescription AS rx
+USING (npi)
+WHERE specialty_description = 'Pain Management';
+
+    
 --     c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
+		
+		
